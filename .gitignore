@@ -15,6 +15,9 @@ pomodoro-tauri/src-tauri/target/
 .vscode/
 .idea/
 
+# Claude
+.claude/settings.local.json
+
 # OS
 .DS_Store
 Thumbs.db
