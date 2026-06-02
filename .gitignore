@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Tauri / Rust
+pomodoro-tauri/src-tauri/target/
+
+# Installers / MSI
+*.msi
+*.exe
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

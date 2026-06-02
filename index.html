@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍅 番茄钟</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  background: #0f0f1a;
+  display: flex; justify-content: center; align-items: center;
+  min-height: 100vh; user-select: none;
+}
+.card {
+  width: 380px; background: #1a1a2e; border-radius: 24px;
+  padding: 32px 28px 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+
+/* ── Header ── */
+.header { text-align: center; margin-bottom: 28px; }
+.header h1 { font-size: 22px; font-weight: 700; color: #eee; letter-spacing: 2px; }
+.header .sub { font-size: 12px; color: #777; margin-top: 2px; }
+
+/* ── Mode badge ── */
+.mode-badge {
+  display: inline-block; padding: 4px 14px; border-radius: 20px;
+  font-size: 13px; font-weight: 600; margin-bottom: 20px;
+  transition: all 0.4s;
+}
+.mode-badge.work { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+.mode-badge.break { background: rgba(81,207,102,0.15); color: #51cf66; }
+
+/* ── Timer ring ── */
+.ring-wrap {
+  position: relative; width: 220px; height: 220px; margin: 0 auto 20px;
+}
+.ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 6; }
+.ring-fg {
+  fill: none; stroke: #ff6b6b; stroke-width: 6; stroke-linecap: round;
+  stroke-dasharray: 534.07; stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear, stroke 0.4s;
+}
+.ring-fg.break { stroke: #51cf66; }
+.ring-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%); text-align: center;
+}
+.ring-center .time {
+  font-size: 50px; font-weight: 700; color: #fff;
+  letter-spacing: 2px; font-variant-numeric: tabular-nums; line-height: 1;
+}
+.ring-center .unit { font-size: 13px; color: #888; margin-top: 4px; display: block; }
+
+/* ── Buttons ── */
+.btns { display: flex; justify-content: center; gap: 14px; margin-bottom: 20px; }
+.btn {
+  display: flex; align-items: center; gap: 6px; padding: 10px 26px;
+  border: none; border-radius: 14px; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: transform 0.12s, box-shadow 0.15s;
+  font-family: inherit;
+}
+.btn:active { transform: scale(0.95); }
+.btn-main {
+  background: #ff6b6b; color: #fff;
+  box-shadow: 0 5px 18px rgba(255,107,107,0.35);
+}
+.btn-main:hover { box-shadow: 0 7px 22px rgba(255,107,107,0.5); }
+.btn-main.break-btn { background: #51cf66; box-shadow: 0 5px 18px rgba(81,207,102,0.35); }
+.btn-main.paused { background: #ffa94d; box-shadow: 0 5px 18px rgba(255,169,77,0.35); }
+.btn-reset {
+  background: rgba(255,255,255,0.08); color: #ccc;
+}
+.btn-reset:hover { background: rgba(255,255,255,0.15); }
+
+/* ── Settings ── */
+.settings { text-align: center; margin-top: 4px; }
+.setting-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px; }
+.setting-label { font-size: 12px; color: #777; width: 56px; text-align: right; }
+.chips { display: flex; gap: 6px; }
+.chip {
+  width: 40px; height: 30px; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; background: transparent; color: #999;
+  cursor: pointer; font-size: 13px; font-family: inherit;
+  transition: all 0.2s;
+}
+.chip:hover { border-color: rgba(255,255,255,0.25); color: #ddd; }
+.chip.active {
+  background: rgba(255,107,107,0.18); border-color: #ff6b6b;
+  color: #ff6b6b; font-weight: 600;
+}
+.chip.active.break-active {
+  background: rgba(81,207,102,0.18); border-color: #51cf66; color: #51cf66;
+}
+
+/* ── Session counter ── */
+.counter { text-align: center; margin-top: 10px; font-size: 12px; color: #555; min-height: 18px; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  background: #222; color: #eee; padding: 8px 20px; border-radius: 20px;
+  font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 99;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <!-- Header -->
+  <div class="header">
+    <h1>🍅 番茄钟</h1>
+  </div>
+
+  <!-- Mode badge -->
+  <div style="text-align:center">
+    <span class="mode-badge work" id="badge">专注</span>
+  </div>
+
+  <!-- Timer ring -->
+  <div class="ring-wrap">
+    <svg viewBox="0 0 200 200">
+      <circle class="ring-bg" cx="100" cy="100" r="85"/>
+      <circle class="ring-fg" id="ring" cx="100" cy="100" r="85"/>
+    </svg>
+    <div class="ring-center">
+      <span class="time" id="time">25:00</span>
+      <span class="unit">分钟</span>
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="btns">
+    <button class="btn btn-main" id="btnMain"><span id="btnIcon">▶</span> <span id="btnText">开始</span></button>
+    <button class="btn btn-reset" id="btnReset">↺ 重置</button>
+  </div>
+
+  <!-- Settings -->
+  <div class="settings">
+    <div class="setting-row">
+      <span class="setting-label">专注</span>
+      <div class="chips" id="workChips">
+        <button class="chip" data-m="15">15</button>
+        <button class="chip active" data-m="25">25</button>
+        <button class="chip" data-m="45">45</button>
+        <button class="chip" data-m="60">60</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <span class="setting-label">休息</span>
+      <div class="chips" id="breakChips">
+        <button class="chip" data-m="3">3</button>
+        <button class="chip active" data-m="5">5</button>
+        <button class="chip" data-m="10">10</button>
+        <button class="chip" data-m="15">15</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session counter -->
+  <div class="counter" id="counter"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+const C = 2 * Math.PI * 85; // circumference
+const S = {
+  mode: 'work',         // 'work' | 'break'
+  status: 'idle',       // 'idle' | 'running' | 'paused'
+  workSec: 25 * 60,
+  breakSec: 5 * 60,
+  left: 25 * 60,        // remaining seconds
+  total: 25 * 60,       // current session total
+  timer: null,
+  sessions: 0
+};
+
+// ── DOM ──
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+const els = {
+  time: $('#time'), ring: $('#ring'), badge: $('#badge'),
+  btnMain: $('#btnMain'), btnIcon: $('#btnIcon'), btnText: $('#btnText'),
+  btnReset: $('#btnReset'), counter: $('#counter'), toast: $('#toast'),
+  workChips: $('#workChips'), breakChips: $('#breakChips')
+};
+
+// ── Helpers ──
+const fmt = (s) => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+
+function updateUI() {
+  els.time.textContent = fmt(S.left);
+  els.ring.style.strokeDashoffset = C * (1 - S.left / S.total);
+}
+
+function updateMode() {
+  if (S.mode === 'work') {
+    els.badge.textContent = '🍅 专注';
+    els.badge.className = 'mode-badge work';
+    els.ring.className = 'ring-fg';
+    els.btnMain.className = 'btn btn-main';
+  } else {
+    els.badge.textContent = '☕ 休息';
+    els.badge.className = 'mode-badge break';
+    els.ring.className = 'ring-fg break';
+    els.btnMain.className = 'btn btn-main break-btn';
+  }
+  // Update chip active colors
+  $$('#workChips .chip').forEach(c => c.classList.toggle('active', parseInt(c.dataset.m) === S.workSec/60));
+  $$('#breakChips .chip').forEach(c => c.classList.toggle('active', parseInt(c.dataset.m) === S.breakSec/60));
+  // Update counter
+  els.counter.textContent = S.sessions > 0 ? `✅ 已完成 ${S.sessions} 个番茄` : '';
+}
+
+// ── Timer ──
+function tick() {
+  S.left--;
+  updateUI();
+  document.title = `${fmt(S.left)} - ${S.mode === 'work' ? '🍅专注' : '☕休息'}`;
+  if (S.left <= 0) finish();
+}
+
+function start() {
+  S.status = 'running';
+  els.btnIcon.textContent = '⏸';
+  els.btnText.textContent = '暂停';
+  els.btnMain.classList.add('paused');
+  S.timer = setInterval(tick, 1000);
+  document.title = `${fmt(S.left)} - ${S.mode === 'work' ? '🍅专注' : '☕休息'}`;
+}
+
+function pause() {
+  S.status = 'paused';
+  els.btnIcon.textContent = '▶';
+  els.btnText.textContent = '继续';
+  els.btnMain.classList.remove('paused');
+  clearInterval(S.timer);
+  S.timer = null;
+}
+
+function reset() {
+  if (S.timer) { clearInterval(S.timer); S.timer = null; }
+  S.status = 'idle';
+  S.left = S.total;
+  els.btnIcon.textContent = '▶';
+  els.btnText.textContent = '开始';
+  els.btnMain.classList.remove('paused');
+  updateUI();
+  document.title = '🍅 番茄钟';
+}
+
+async function finish() {
+  clearInterval(S.timer); S.timer = null;
+
+  const isWork = S.mode === 'work';
+  if (isWork) S.sessions++;
+
+  // Web Notification
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(isWork ? '🍅 专注时间结束！' : '☕ 休息时间结束！', {
+      body: isWork ? '太棒了，休息一下吧~' : '休息好了，开始新的番茄吧！',
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🍅</text></svg>'
+    });
+  }
+
+  // Toast fallback
+  showToast(isWork ? '🍅 专注完成！休息一下吧~' : '☕ 休息结束！开始新番茄~');
+
+  // Switch mode
+  S.mode = isWork ? 'break' : 'work';
+  S.total = S.mode === 'work' ? S.workSec : S.breakSec;
+  S.left = S.total;
+  S.status = 'idle';
+  els.btnIcon.textContent = '▶';
+  els.btnText.textContent = '开始';
+  els.btnMain.classList.remove('paused');
+  updateMode();
+  updateUI();
+  document.title = '🍅 番茄钟';
+}
+
+function showToast(msg) {
+  els.toast.textContent = msg;
+  els.toast.classList.add('show');
+  setTimeout(() => els.toast.classList.remove('show'), 3000);
+}
+
+// ── Events ──
+els.btnMain.addEventListener('click', () => {
+  if (S.status === 'idle' || S.status === 'paused') start(); else pause();
+});
+els.btnReset.addEventListener('click', reset);
+
+els.workChips.addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  S.workSec = parseInt(chip.dataset.m) * 60;
+  if (S.mode === 'work' && S.status === 'idle') { S.total = S.workSec; S.left = S.total; updateUI(); }
+  updateMode();
+});
+
+els.breakChips.addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  S.breakSec = parseInt(chip.dataset.m) * 60;
+  if (S.mode === 'break' && S.status === 'idle') { S.total = S.breakSec; S.left = S.total; updateUI(); }
+  updateMode();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); els.btnMain.click(); }
+  if (e.code === 'KeyR') { e.preventDefault(); els.btnReset.click(); }
+});
+
+// Request notification permission on first click
+document.addEventListener('click', () => {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}, { once: true });
+
+// ── Load saved prefs ──
+try {
+  const saved = JSON.parse(localStorage.getItem('pomodoro-prefs'));
+  if (saved) {
+    S.workSec = saved.workSec || S.workSec;
+    S.breakSec = saved.breakSec || S.breakSec;
+  }
+} catch (_) {}
+
+// Save prefs on unload
+window.addEventListener('beforeunload', () => {
+  localStorage.setItem('pomodoro-prefs', JSON.stringify({ workSec: S.workSec, breakSec: S.breakSec }));
+});
+
+// ── Init ──
+S.total = S.workSec;
+S.left = S.total;
+updateUI();
+updateMode();
+</script>
+</body>
+</html>

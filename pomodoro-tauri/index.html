@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍅 番茄钟</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <h1><span class="emoji">🍅</span> 番茄钟</h1>
+      </div>
+
+      <!-- Mode tabs -->
+      <div class="modes" id="modes">
+        <button class="mode-btn work active" data-mode="work">🍅 专注</button>
+        <button class="mode-btn short-break" data-mode="shortBreak">☕ 短休息</button>
+        <button class="mode-btn long-break" data-mode="longBreak">🌿 长休息</button>
+      </div>
+
+      <!-- Session dots -->
+      <div class="sessions" id="sessions"></div>
+
+      <!-- Timer -->
+      <div class="timer-wrapper">
+        <svg class="timer-ring" viewBox="0 0 200 200">
+          <circle class="ring-bg" cx="100" cy="100" r="92" />
+          <circle class="ring-progress" id="ringProgress" cx="100" cy="100" r="92"
+                  stroke-dasharray="578.05" stroke-dashoffset="0" />
+        </svg>
+        <div class="timer-display">
+          <div class="time" id="timeDisplay">25:00</div>
+          <div class="time-label" id="timeLabel">专注</div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="btn btn-secondary" id="btnReset" title="重置" disabled>
+          <span class="btn-icon">↺</span>
+        </button>
+        <button class="btn btn-play" id="btnPlay" title="开始">
+          <span id="btnPlayIcon">▶</span>
+        </button>
+        <button class="btn btn-secondary" id="btnSkip" title="跳过">
+          <span class="btn-icon">⏭</span>
+        </button>
+      </div>
+
+      <!-- Status -->
+      <div class="status" id="status"></div>
+
+      <!-- Current task -->
+      <div class="current-task" id="currentTask"></div>
+
+      <!-- Task input -->
+      <div class="task-area">
+        <div class="task-input-wrap">
+          <input type="text" class="task-input" id="taskInput"
+                 placeholder="当前任务是什么？" maxlength="80" />
+          <button class="task-btn" id="taskBtn">记录</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings panel -->
+    <button class="settings-toggle" id="settingsToggle" title="设置">⚙</button>
+  </div>
+
+  <div class="settings-overlay" id="settingsOverlay"></div>
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+      <h2>⚙ 设置</h2>
+      <button class="settings-close" id="settingsClose">✕</button>
+    </div>
+    <div class="setting-group">
+      <label>🍅 专注时长（分钟）</label>
+      <div class="setting-input">
+        <input type="number" id="workDuration" min="1" max="120" value="25" />
+        <span>分钟</span>
+      </div>
+    </div>
+    <div class="setting-group">
+      <label>☕ 短休息时长（分钟）</label>
+      <div class="setting-input">
+        <input type="number" id="shortBreakDuration" min="1" max="30" value="5" />
+        <span>分钟</span>
+      </div>
+    </div>
+    <div class="setting-group">
+      <label>🌿 长休息时长（分钟）</label>
+      <div class="setting-input">
+        <input type="number" id="longBreakDuration" min="1" max="60" value="15" />
+        <span>分钟</span>
+      </div>
+    </div>
+    <div class="setting-group">
+      <label>🔄 长休息间隔（几个番茄后）</label>
+      <div class="setting-input">
+        <input type="number" id="longBreakInterval" min="1" max="10" value="4" />
+        <span>个番茄</span>
+      </div>
+    </div>
+    <div class="setting-group">
+      <label>🔊 音量</label>
+      <div class="setting-input">
+        <input type="range" id="volume" min="0" max="100" value="50" style="flex:1" />
+        <span id="volumeLabel">50%</span>
+      </div>
+    </div>
+    <div class="setting-group">
+      <label>📌 窗口置顶</label>
+      <div class="setting-input">
+        <input type="checkbox" id="alwaysOnTop" />
+        <span>始终保持窗口在最前</span>
+      </div>
+    </div>
+    <button class="task-btn" id="settingsApply" style="align-self: stretch; text-align: center; padding: 12px;">
+      保存设置
+    </button>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

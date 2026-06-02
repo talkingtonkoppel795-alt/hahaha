@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import py_compile; py_compile.compile\\('pomodoro.py', doraise=True\\); print\\('OK'\\)\")",
+      "Bash(python -c \"compile\\(open\\('pomodoro.py'\\).read\\(\\), 'pomodoro.py', 'exec'\\); print\\('Syntax OK'\\)\")",
+      "Bash(python -c \"print\\('hello'\\)\")",
+      "Bash(npm install *)",
+      "Bash(npm config *)",
+      "Bash(winget install *)",
+      "Bash(curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs)",
+      "Bash(sh -s -- -y)",
+      "Bash(mkdir -p pomodoro-tauri/src)",
+      "Bash(mkdir -p pomodoro-tauri/src-tauri/src)",
+      "Bash(mkdir -p pomodoro-tauri/src-tauri/capabilities)",
+      "Bash(mkdir -p pomodoro-tauri/src-tauri/icons)",
+      "Bash(mkdir -p pomodoro-tauri/public)",
+      "Bash(npm run *)",
+      "Bash(npx tauri *)",
+      "Bash(grep -v \"deps\\\\|build\\\\|incremental\\\\|examples\\\\|\\\\.d$\")",
+      "Bash(cargo --version)",
+      "Bash(rustc --version)",
+      "Bash(npm --version)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(cargo build *)",
+      "Bash(/d/first-cc/1/pomodoro-tauri/src-tauri/target/debug/pomodoro-tauri.exe)",
+      "Bash(tasklist)",
+      "Bash(cargo doc *)",
+      "Bash(echo \"Started with PID: $!\")",
+      "Bash(./pomodoro-tauri.exe)",
+      "Bash(echo \"EXIT CODE: $?\")",
+      "Bash(reg query *)",
+      "Bash(dir \"C:\\\\Program Files \\(x86\\)\\\\Microsoft\\\\EdgeWebView\\\\Application\")",
+      "Bash(wevtutil qe *)",
+      "Bash(taskkill /f /im pomodoro-tauri.exe)",
+      "Bash(cmd /c \"D:\\\\first-cc\\\\1\\\\启动番茄钟.bat\")",
+      "Bash(/d/first-cc/1/pomodoro-tauri/src-tauri/target/release/pomodoro-tauri.exe)",
+      "Bash(gh auth *)",
+      "Bash(git add *)"
+    ]
+  }
+}
